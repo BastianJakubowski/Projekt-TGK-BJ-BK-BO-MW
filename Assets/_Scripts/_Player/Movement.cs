@@ -1,32 +1,87 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class SimplePlayerMovement : MonoBehaviour
-{
-    public float moveSpeed = 5f;
-    public int Dash = 2;
+[RequireComponent( typeof( Rigidbody ) )]
+public class SimplePlayerMovement : MonoBehaviour {
+    [Header( "Movement Settings" )]
+    public float moveSpeed;
     private Rigidbody rb;
     private Vector3 movement;
 
-    void Start()
-    {
-        rb = GetComponent<Rigidbody>();
+    [Header( "Dash Settings" )]
+    public int maxDashCharges;
+    private int currentDashCharges;
+    public float dashForce;
+    public float dashDuration;
+    public float dashCooldown;
+
+    private bool isDashing = false;
+    private float dashTimer;
+    private float cooldownTimer;
+
+    private Vector3 dashDirection;
+
+    void Start( ) {
+        rb = GetComponent<Rigidbody>( );
         rb.freezeRotation = true;
+        currentDashCharges = maxDashCharges;
     }
 
-    void FixedUpdate()
-    {
-        // Get input
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-
-
-        movement = transform.right * x + transform.forward * z;
-
-        if (Input.GetKeyDown(KeyCode.LeftShift)) {
-            moveSpeed = Dash * moveSpeed * Time.deltaTime;
+    void Update( ) {
+        // Handle dash input
+        if ( Input.GetKeyDown( KeyCode.Q ) && currentDashCharges > 0 && !isDashing ) {
+            StartDash( );
         }
-        rb.MovePosition(rb.position + movement * moveSpeed * Time.fixedDeltaTime);
-        
+
+        // Recharge dash charges over time
+        if ( currentDashCharges < maxDashCharges ) {
+            cooldownTimer += Time.deltaTime;
+            if ( cooldownTimer >= dashCooldown ) {
+                currentDashCharges++;
+                cooldownTimer = 0f;
+            }
+        }
+
+        // Dash duration logic
+        if ( isDashing ) {
+            dashTimer += Time.deltaTime;
+            if ( dashTimer >= dashDuration ) {
+                isDashing = false;
+                dashTimer = 0f;
+            }
+        }
     }
+
+    void FixedUpdate( ) {
+        if ( !isDashing ) {
+            float x = Input.GetAxis( "Horizontal" );
+            float z = Input.GetAxis( "Vertical" );
+            movement = transform.right * x + transform.forward * z;
+
+            rb.MovePosition( rb.position + movement * moveSpeed * Time.fixedDeltaTime );
+        } else {
+            // Apply dash movement
+            rb.MovePosition( rb.position + dashDirection * dashForce * Time.fixedDeltaTime );
+        }
+    }
+
+    void StartDash( ) {
+        dashDirection = movement.normalized;
+        if ( dashDirection == Vector3.zero )
+            dashDirection = transform.forward; // Dash forward if no movement input
+
+        isDashing = true;
+        currentDashCharges--;
+        cooldownTimer = 0f;
+    }
+
+    // Exposed for UI
+    public float GetDashCooldownPercent( ) {
+        if ( currentDashCharges >= maxDashCharges )
+            return 1f;
+
+        return Mathf.Clamp01( cooldownTimer / dashCooldown );
+    }
+
+    public int GetDashCharges( ) => currentDashCharges;
+    public int GetMaxDashCharges( ) => maxDashCharges;
 }
