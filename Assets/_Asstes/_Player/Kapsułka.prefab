@@ -567,7 +567,7 @@ GameObject:
   - component: {fileID: 7333883729355513418}
   - component: {fileID: 6505235741649548579}
   - component: {fileID: 372235781913976409}
-  - component: {fileID: 7830212284796373191}
+   - component: {fileID: 7830212284796373191}
   m_Layer: 0
   m_Name: "Kapsu\u0142ka"
   m_TagString: Untagged
