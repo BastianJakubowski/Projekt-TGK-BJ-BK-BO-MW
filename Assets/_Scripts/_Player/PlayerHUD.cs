@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour {
     public PlayerController player;
+    public SimplePlayerMovement Movement_and_dash;
 
     [Header( "UI Elements" )]
     public Slider healthBar;
@@ -14,7 +15,8 @@ public class PlayerHUD : MonoBehaviour {
             healthBar.value = player.GetHealthPercent( );
 
             // Update dash cooldown (e.g., radial fill)
-            dashCooldownImage.fillAmount = player.GetDashCooldownPercent( );
+            dashCooldownImage.fillAmount = Movement_and_dash
+                .GetDashCooldownPercent( );
         }
     }
 }
